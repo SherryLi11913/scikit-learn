@@ -217,8 +217,8 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
 
         if self.strategy != "quantile" and sample_weight is not None:
             warnings.warn(
-                "sample_weight parameter only supposed to work when strategy is `quantile`"
-                "sample_weight parameter is ignored"
+                "sample_weight parameter only supposed to work when strategy is `quantile` "
+                "sample_weight parameter is ignored when the strategy is not `quantile`"
             )
 
         
@@ -294,6 +294,7 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
                             for quantile in quantiles
                         ]
                     )
+                print(np.asarray(percentile));
                 bin_edges[jj] = np.asarray(percentile)
 
             elif self.strategy == "kmeans":
