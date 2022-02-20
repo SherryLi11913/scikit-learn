@@ -1440,7 +1440,7 @@ def check_scalar(
     if include_boundaries == "both":
         if max_val is None and min_val is None:
             raise ValueError(
-                "`include_boundaries`='both' without specifying explicitly `max_val` "
+                "`include_boundaries`='both' without specifying explicitly `max_val` and `min_val` "
                 "is inconsistent."
             )
         if max_val is None:
