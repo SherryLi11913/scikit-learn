@@ -293,7 +293,6 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
                             for quantile in quantiles
                         ]
                     )
-                print(np.asarray(percentile));
                 bin_edges[jj] = np.asarray(percentile)
 
             elif self.strategy == "kmeans":
