@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import pytest
 import numpy as np
 import scipy.sparse as sp
@@ -432,3 +433,13 @@ def test_kbinsdiscretizer_subsample_values(subsample):
             kbd_default.bin_edges_[0] == kbd_with_subsampling.bin_edges_[0]
         )
         assert kbd_default.bin_edges_.shape == kbd_with_subsampling.bin_edges_.shape
+
+@pytest.mark.parametrize("strategy", ["uniform", "kmeans"])
+def test_kbinsdiscretizer_sample_weight_warning(strategy):
+    X = [[-2, 1.5, -4, -1], [-1, 2.5, -3, -0.5], [0, 3.5, -2, 0.5], [1, 4.5, -1, 2]]
+    w = np.array([1, 1, 1, 1])
+    trans = KBinsDiscretizer(n_bins=[2, 3, 3, 3], encode="ordinal", strategy=strategy)
+
+    warning_message = "sample_weight parameter is ignored when the strategy is not `quantile`"
+    with pytest.warns(UserWarning, match=warning_message):
+        trans.fit(X, sample_weight=w)
