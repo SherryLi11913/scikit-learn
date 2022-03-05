@@ -1443,6 +1443,23 @@ def check_scalar(
             f"Unknown value for `include_boundaries`: {repr(include_boundaries)}. "
             f"Possible values are: {expected_include_boundaries}."
         )
+    
+    if include_boundaries == "both":
+        if max_val is None and min_val is None:
+            raise ValueError(
+                "`include_boundaries`='both' without specifying explicitly `max_val` and `min_val` "
+                "is inconsistent."
+            )
+        if max_val is None:
+            raise ValueError(
+                "`include_boundaries`='both' without specifying explicitly `max_val` "
+                "is inconsistent."
+            )
+        if min_val is None:
+            raise ValueError(
+                "`include_boundaries`='both' without specifying explicitly `min_val` "
+                "is inconsistent."
+            )
 
     if max_val is None and include_boundaries == "right":
         raise ValueError(

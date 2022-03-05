@@ -1207,6 +1207,42 @@ def test_check_scalar_valid(x):
                 "is inconsistent."
             ),
         ),
+        (
+            4, 
+            "test_name9",
+            int, 
+            None, 
+            None, 
+            "both", 
+            ValueError(
+                "`include_boundaries`='both' without specifying explicitly `max_val` and `min_val` "
+                "is inconsistent."
+            ),
+        ),
+        (
+            4, 
+            "test_name10",
+            int, 
+            None, 
+            10,
+            "both",
+            ValueError(
+                "`include_boundaries`='both' without specifying explicitly `min_val` "
+                "is inconsistent."
+            ),
+        ),
+        (
+            4, 
+            "test_name11",
+            int, 
+            2, 
+            None,
+            "both",
+            ValueError(
+                "`include_boundaries`='both' without specifying explicitly `max_val` "
+                "is inconsistent."
+            ),
+        )
     ],
 )
 def test_check_scalar_invalid(
