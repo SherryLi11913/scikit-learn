@@ -432,3 +432,33 @@ def test_kbinsdiscretizer_subsample_values(subsample):
             kbd_default.bin_edges_[0] == kbd_with_subsampling.bin_edges_[0]
         )
         assert kbd_default.bin_edges_.shape == kbd_with_subsampling.bin_edges_.shape
+
+@pytest.mark.parametrize("strategy", ["uniform", "kmeans"])
+def test_kbinsdiscretizer_sample_weight_warning(strategy):
+    w = np.array([0, 1, 3, 1])
+    trans = KBinsDiscretizer(n_bins=[2, 3, 3, 3], encode="ordinal", strategy=strategy)
+
+    warning_message = "sample_weight parameter is ignored when the strategy is not `quantile`"
+    with pytest.warns(UserWarning, match=warning_message):
+        trans.fit(X, sample_weight=w)
+
+@pytest.mark.parametrize("strategy, expected", [
+    ("uniform", [[0, 0, 0, 0], [0, 1, 1, 0], [1, 2, 2, 1], [1, 2, 2, 2]]),
+    ("quantile", [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [1, 1, 1, 1]]),
+    ("kmeans", [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [1, 2, 2, 2]]),
+])
+def test_kbinsdiscretizer_sample_weight_used(strategy, expected):
+    w = np.array([0, 1, 3, 1])
+    trans = KBinsDiscretizer(n_bins=[2, 3, 3, 3], encode="ordinal", strategy=strategy)
+    trans.fit(X, sample_weight=w)
+    assert_array_equal(expected, trans.transform(X))
+
+@pytest.mark.parametrize("strategy, expected", [    
+    ("uniform", [[0, 0, 0, 0], [0, 1, 1, 0], [1, 2, 2, 1], [1, 2, 2, 2]]),
+    ("quantile", [[0, 0, 0, 0], [0, 1, 1, 1], [1, 2, 2, 2], [1, 2, 2, 2]]),
+    ("kmeans", [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [1, 2, 2, 2]]),
+])
+def test_kbinsdiscretizer_sample_weight_unused(strategy, expected):
+    trans = KBinsDiscretizer(n_bins=[2, 3, 3, 3], encode="ordinal", strategy=strategy)
+    trans.fit(X)
+    assert_array_equal(expected, trans.transform(X))

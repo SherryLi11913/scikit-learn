@@ -688,6 +688,10 @@ Changelog
   then `get_output_feature_names` is not defined.
   :pr:`21569` by :user:`Aurélien Geron <ageron>`.
 
+- |Enhancement| added support for `sample_weight` with strategy `"quantile"` in 
+  :class:`preprocessing.KBinsDiscretizer`.
+  :pr:`20758` by :user:`Gary Xie<GaryJX>, Jonathan Bai<Jonathan0137>`.
+
 - |Fix| :class:`preprocessing.LabelBinarizer` now validates input parameters in
   `fit` instead of `__init__`.
   :pr:`21434` by :user:`Krum Arnaudov <krumeto>`.

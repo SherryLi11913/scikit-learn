@@ -18,8 +18,9 @@ from ..utils.validation import check_is_fitted
 from ..utils.validation import check_random_state
 from ..utils.validation import _check_feature_names_in
 from ..utils.validation import check_scalar
+from ..utils.validation import _check_sample_weight
+from ..utils.stats import _weighted_percentile
 from ..utils import _safe_indexing
-
 
 class KBinsDiscretizer(TransformerMixin, BaseEstimator):
     """
@@ -171,7 +172,7 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
         self.subsample = subsample
         self.random_state = random_state
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, sample_weight=None):
         """
         Fit the estimator.
 
@@ -183,6 +184,10 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
         y : None
             Ignored. This parameter exists only for compatibility with
             :class:`~sklearn.pipeline.Pipeline`.
+
+        sample_weight : array-like shape (n_samples,) default = None
+            Weights for each sample, used to calculate quantiles if 
+            'strategy = "quantile"' else ignored.
 
         Returns
         -------
@@ -205,6 +210,17 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
 
         n_samples, n_features = X.shape
 
+
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+
+
+        if self.strategy != "quantile" and sample_weight is not None:
+            warnings.warn(
+                "sample_weight parameter is ignored when the strategy is not `quantile`"
+            )
+
+        
         if self.strategy == "quantile" and self.subsample is not None:
             if self.subsample == "warn":
                 if n_samples > 2e5:
@@ -268,7 +284,16 @@ class KBinsDiscretizer(TransformerMixin, BaseEstimator):
 
             elif self.strategy == "quantile":
                 quantiles = np.linspace(0, 100, n_bins[jj] + 1)
-                bin_edges[jj] = np.asarray(np.percentile(column, quantiles))
+                if sample_weight is None:
+                    percentile = np.percentile(column, quantiles)
+                else:
+                    percentile = np.array(
+                        [
+                            _weighted_percentile(column, sample_weight, quantile)
+                            for quantile in quantiles
+                        ]
+                    )
+                bin_edges[jj] = np.asarray(percentile)
 
             elif self.strategy == "kmeans":
                 from ..cluster import KMeans  # fixes import loops
