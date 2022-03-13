@@ -737,7 +737,6 @@ class BaseSearchCV(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta):
                 if rank == 1:
                     firsts.append((i,abs(results["mean_train_score"][i] - results["mean_test_score"][i])))
             best_index = min(firsts, key=lambda item: item[1])[0]
-            print(best_index)
         return best_index
 
     def fit(self, X, y=None, *, groups=None, **fit_params):
