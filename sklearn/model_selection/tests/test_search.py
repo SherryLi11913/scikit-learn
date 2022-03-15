@@ -2411,7 +2411,7 @@ def test_search_cv_verbose_3(capsys, return_train_score):
         match = re.findall(r"score=[\d\.]+", captured)
     assert len(match) == 3
 
-# pytest -v .\sklearn\model_selection\tests\test_search.py
+
 @pytest.mark.parametrize(
     "params, best_params",
     [
