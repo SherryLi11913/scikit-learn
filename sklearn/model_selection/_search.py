@@ -732,7 +732,14 @@ class BaseSearchCV(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta):
             if best_index < 0 or best_index >= len(results["params"]):
                 raise IndexError("best_index_ index out of range")
         else:
-            best_index = results[f"rank_test_{refit_metric}"].argmin()
+            if "mean_train_score" in results and "mean_test_score" in results:
+                firsts = []
+                for i, rank in enumerate(results[f"rank_test_{refit_metric}"]):
+                    if rank == 1:
+                        firsts.append((i,abs(results["mean_train_score"][i] - results["mean_test_score"][i])))
+                best_index = min(firsts, key=lambda item: item[1])[0]
+            else:
+                best_index = results[f"rank_test_{refit_metric}"].argmin()
         return best_index
 
     def fit(self, X, y=None, *, groups=None, **fit_params):
