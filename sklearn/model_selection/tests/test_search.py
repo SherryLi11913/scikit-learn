@@ -32,6 +32,7 @@ from sklearn.base import is_classifier
 from sklearn.datasets import make_classification
 from sklearn.datasets import make_blobs
 from sklearn.datasets import make_multilabel_classification
+from sklearn.datasets import load_iris
 
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
@@ -2409,3 +2410,70 @@ def test_search_cv_verbose_3(capsys, return_train_score):
     else:
         match = re.findall(r"score=[\d\.]+", captured)
     assert len(match) == 3
+
+# pytest -v .\sklearn\model_selection\tests\test_search.py
+@pytest.mark.parametrize(
+    "params, best_params",
+    [
+        ({'kernel':('rbf', 'linear'), 'C':[8, 9]}, {'kernel': 'rbf', 'C': 8})
+    ]
+)
+def test_grid_search_best_mean_score(params, best_params):
+    """
+    Test grid search returns params with highest mean_test_score, 
+    even if another test score (with a lower mean_test_score) has a
+    smaller difference between mean_test_score and mean_train_score
+    """
+    svc = SVC()
+    clf = GridSearchCV(svc, params, return_train_score=True)
+    iris = load_iris()
+    clf.fit(iris.data, iris.target)
+    assert clf.best_params_ == best_params
+
+
+@pytest.mark.parametrize(
+    "params, best_params", 
+    [
+        ({'kernel': ('linear', 'rbf'), 'C': [1, 10]}, {'kernel': 'linear', 'C': 1}), 
+        ({'kernel':('rbf', 'linear'), 'C':[10, 1]}, {'kernel': 'linear', 'C': 1})
+    ]
+)
+def test_grid_search_mean_test_score_tie(params, best_params):
+    """
+    Test grid search returns params with highest mean_test_score 
+    with a smaller difference between mean_test_score and mean_train_score,
+    if there is a tie for highest mean_test_score
+    """
+    svc = SVC()
+    clf = GridSearchCV(svc, params, return_train_score=True)
+    iris = load_iris()
+    clf.fit(iris.data, iris.target)
+    assert clf.best_params_ == best_params
+
+
+def test_grid_search_different_permutations_same_result():
+    """
+    Test grid search returns same result for 
+    different permutations of the same input params
+    """
+    iris = load_iris()
+    def grid_search_best_params(params):
+        """
+        Helper function to run a grid search and return the best params
+        """
+        svc = SVC()
+        clf = GridSearchCV(svc, params, return_train_score=True)
+        clf.fit(iris.data, iris.target)
+        return clf.best_params_
+
+    params_1 = {'kernel': ('linear', 'rbf'), 'C': [4, 5]}
+    params_2 = {'kernel': ('linear', 'rbf'), 'C':[5, 4]}
+    params_3 = {'kernel': ('rbf', 'linear'), 'C': [4, 5]}
+    params_4 = {'kernel': ('rbf', 'linear'), 'C':[5, 4]}
+
+    best_params_1 = grid_search_best_params(params_1)
+    best_params_2 = grid_search_best_params(params_2)
+    best_params_3 = grid_search_best_params(params_3)
+    best_params_4 = grid_search_best_params(params_4)
+
+    assert best_params_1 == best_params_2 == best_params_3 == best_params_4
