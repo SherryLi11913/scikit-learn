@@ -8,6 +8,7 @@ approximately the same number of samples.
 # Author: Nicolas Hug
 
 import numpy as np
+import scipy.sparse as sp
 
 from ...utils import check_random_state, check_array
 from ...base import BaseEstimator, TransformerMixin
@@ -41,12 +42,18 @@ def _find_binning_thresholds(col_data, max_bins):
         A given value x will be mapped into bin value i iff
         bining_thresholds[i - 1] < x <= binning_thresholds[i]
     """
-    # ignore missing values when computing bin thresholds
-    missing_mask = np.isnan(col_data)
-    if missing_mask.any():
-        col_data = col_data[~missing_mask]
-    col_data = np.ascontiguousarray(col_data, dtype=X_DTYPE)
-    distinct_values = np.unique(col_data)
+    if sp.issparse(col_data):
+        # print(col_data.nonzero())
+        col_data = col_data.toarray()
+        distinct_values = col_data
+    else:
+        # ignore missing values when computing bin thresholds)
+        missing_mask = np.isnan(col_data)
+        if missing_mask.any():
+            col_data = col_data[~missing_mask]
+        col_data = np.ascontiguousarray(col_data, dtype=X_DTYPE)
+        distinct_values = np.unique(col_data)
+
     if len(distinct_values) <= max_bins:
         midpoints = distinct_values[:-1] + distinct_values[1:]
         midpoints *= 0.5
@@ -190,7 +197,7 @@ class _BinMapper(TransformerMixin, BaseEstimator):
                 )
             )
 
-        X = check_array(X, dtype=[X_DTYPE], force_all_finite=False)
+        X = check_array(X, dtype=[X_DTYPE], force_all_finite=False, accept_sparse=True)
         max_bins = self.n_bins - 1
 
         rng = check_random_state(self.random_state)

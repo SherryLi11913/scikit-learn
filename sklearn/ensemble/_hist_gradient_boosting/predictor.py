@@ -4,6 +4,7 @@ This module contains the TreePredictor class which is used for prediction.
 # Author: Nicolas Hug
 
 import numpy as np
+import scipy.sparse as sp
 
 from .common import Y_DTYPE
 from ._predictor import _predict_from_raw_data
@@ -65,6 +66,8 @@ class TreePredictor:
         y : ndarray, shape (n_samples,)
             The raw predicted values.
         """
+        if sp.issparse(X):
+            X = X.toarray()
         out = np.empty(X.shape[0], dtype=Y_DTYPE)
         _predict_from_raw_data(
             self.nodes,
