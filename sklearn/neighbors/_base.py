@@ -22,9 +22,9 @@ from ..base import BaseEstimator, MultiOutputMixin
 from ..base import is_classifier
 from ..metrics import pairwise_distances_chunked
 from ..metrics.pairwise import PAIRWISE_DISTANCE_FUNCTIONS
-# from ..metrics._pairwise_distances_reduction import (
-#     PairwiseDistancesArgKmin,
-# )
+from ..metrics._pairwise_distances_reduction import (
+    PairwiseDistancesArgKmin,
+)
 from ..utils import (
     check_array,
     gen_even_slices,
