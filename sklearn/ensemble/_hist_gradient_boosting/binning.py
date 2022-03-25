@@ -43,9 +43,8 @@ def _find_binning_thresholds(col_data, max_bins):
         bining_thresholds[i - 1] < x <= binning_thresholds[i]
     """
     if sp.issparse(col_data):
-        # print(col_data.nonzero())
         col_data = col_data.toarray()
-        distinct_values = col_data
+        distinct_values = np.unique(col_data)
     else:
         # ignore missing values when computing bin thresholds)
         missing_mask = np.isnan(col_data)

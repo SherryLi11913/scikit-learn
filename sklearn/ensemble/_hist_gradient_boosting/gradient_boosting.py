@@ -392,8 +392,6 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):
             n_threads=n_threads,
         )
         if sp.issparse(X_train):
-            print(X_train)
-            print(X_train.toarray())
             X_binned_train = self._bin_data(X_train.toarray(), is_training_data=True)
         else:
             X_binned_train = self._bin_data(X_train, is_training_data=True)
