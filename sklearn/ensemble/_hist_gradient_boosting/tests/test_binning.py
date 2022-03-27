@@ -11,6 +11,7 @@ from sklearn.ensemble._hist_gradient_boosting.common import X_DTYPE
 from sklearn.ensemble._hist_gradient_boosting.common import X_BINNED_DTYPE
 from sklearn.ensemble._hist_gradient_boosting.common import ALMOST_INF
 from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
+import scipy.sparse as sp
 
 n_threads = _openmp_effective_n_threads()
 
@@ -20,6 +21,14 @@ DATA = (
     .normal(loc=[0, 10], scale=[1, 0.01], size=(int(1e6), 2))
     .astype(X_DTYPE)
 )
+
+def test__find_binning_thresholds_sparse_matrix():
+    data = np.linspace(0, 10, 5)
+    row = [0, 1, 2, 3, 4]
+    col = [0, 0, 0, 0, 0]
+    data = sp.csr_matrix((data, (row, col)), (10, 1))
+    bin_thresholds = _find_binning_thresholds(data, max_bins=4)
+    assert_allclose(bin_thresholds, [0, 0, 3.75])
 
 
 def test_find_binning_thresholds_regular_data():
@@ -459,3 +468,4 @@ def test_categorical_parameters(is_categorical, known_categories, match):
     )
     with pytest.raises(ValueError, match=match):
         bin_mapper.fit(X)
+

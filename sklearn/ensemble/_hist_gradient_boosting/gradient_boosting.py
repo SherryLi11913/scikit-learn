@@ -6,6 +6,7 @@ from functools import partial
 import warnings
 
 import numpy as np
+import scipy.sparse as sp
 from timeit import default_timer as time
 from ..._loss.loss import (
     _LOSSES,
@@ -283,7 +284,7 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):
         acc_compute_hist_time = 0.0  # time spent computing histograms
         # time spent predicting X for gradient and hessians update
         acc_prediction_time = 0.0
-        X, y = self._validate_data(X, y, dtype=[X_DTYPE], force_all_finite=False)
+        X, y = self._validate_data(X, y, dtype=[X_DTYPE], force_all_finite=False, accept_sparse=True)
         y = self._encode_y(y)
         check_consistent_length(X, y)
         # Do not create unit sample weights by default to later skip some
@@ -390,7 +391,10 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):
             random_state=self._random_seed,
             n_threads=n_threads,
         )
-        X_binned_train = self._bin_data(X_train, is_training_data=True)
+        if sp.issparse(X_train):
+            X_binned_train = self._bin_data(X_train.toarray(), is_training_data=True)
+        else:
+            X_binned_train = self._bin_data(X_train, is_training_data=True)
         if X_val is not None:
             X_binned_val = self._bin_data(X_val, is_training_data=False)
         else:
@@ -937,7 +941,7 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):
         """
         is_binned = getattr(self, "_in_fit", False)
         dtype = X_BINNED_DTYPE if is_binned else X_DTYPE
-        X = self._validate_data(X, dtype=dtype, force_all_finite=False, reset=False)
+        X = self._validate_data(X, dtype=dtype, force_all_finite=False, reset=False, accept_sparse=True)
         check_is_fitted(self)
         if X.shape[1] != self._n_features:
             raise ValueError(
